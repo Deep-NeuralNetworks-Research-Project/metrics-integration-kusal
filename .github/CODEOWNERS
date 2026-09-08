@@ -1,0 +1,14 @@
+# CODEOWNERS — this is the P5 slice. ORDER MATTERS (last match wins).
+# Do not alphabetise. The /src/cdlib/cli/benchmark.py line must stay below
+# any /src/cdlib/cli/ directory rule when this file is merged into the
+# team monorepo.
+
+/src/cdlib/cli/                         @P2
+/src/cdlib/utils/                       @P2
+/src/cdlib/metrics/                     @KusalPabasara
+/paper/                                 @KusalPabasara
+/docs/figure_standards.md               @KusalPabasara
+/docs/MODEL_CARD.md                     @KusalPabasara
+# MUST stay below P2's /src/cdlib/cli/ rule — later line wins.
+/src/cdlib/cli/benchmark.py             @KusalPabasara
+/docs/architecture.md                   @P1 @P2 @P3 @P4 @KusalPabasara

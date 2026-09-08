@@ -1,0 +1,47 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+*.egg
+
+# environments
+.venv/
+venv/
+env/
+
+# data / checkpoints — never commit media or large binaries
+data/
+checkpoints/
+results/
+wandb/
+*.pt
+*.pth
+*.ckpt
+*.mp4
+*.png
+!docs/**/*.png
+
+# secrets
+.env
+.netrc
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Role-local overlay — committed CLAUDE.md is the shared team file
+CLAUDE.local.md
+
+# Overleaf / LaTeX junk
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.synctex.gz
+paper/*.bbl
+paper/*.blg
+paper/*.fls
+paper/*.fdb_latexmk
