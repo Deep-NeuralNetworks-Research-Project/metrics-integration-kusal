@@ -63,3 +63,29 @@ def test_swap_consistency_contract():
     m.update(dummy["outputs"], dummy["batch"])
     out = m.compute()
     assert 0.0 <= out["swap_consistency"] <= 1.0
+    for key in ("sce_flip", "sce_prob", "delta_f1_swap", "spearman_rho"):
+        assert key in out
+        assert isinstance(out[key], float)
+    assert 0.0 <= out["sce_flip"] <= 1.0
+    assert 0.0 <= out["sce_prob"] <= 1.0
+    assert -1.0 <= out["spearman_rho"] <= 1.0
+
+
+def test_swap_sce_matches_order_module():
+    """Registry path and evaluate path share order_metrics."""
+    from cdlib.metrics.order import order_metrics, probs_from_logits
+    from cdlib.metrics.segmentation import _squeeze_mask
+
+    dummy = _dummy(seed=3)
+    dummy["outputs"]["logits_swapped"] = -dummy["outputs"]["logits"]
+    m = build_metric("swap_consistency")
+    m.update(dummy["outputs"], dummy["batch"])
+    out = m.compute()
+    fwd = probs_from_logits(_squeeze_mask(dummy["outputs"]["logits"].numpy()))
+    rev = probs_from_logits(_squeeze_mask(dummy["outputs"]["logits_swapped"].numpy()))
+    gt = _squeeze_mask(dummy["batch"]["mask"].numpy())
+    expected = order_metrics(fwd, rev, gt, 0.5)
+    assert out["sce_flip"] == expected["sce_flip"]
+    assert out["sce_prob"] == expected["sce_prob"]
+    assert out["delta_f1_swap"] == expected["delta_f1_swap"]
+    assert out["spearman_rho"] == expected["spearman_rho"]
