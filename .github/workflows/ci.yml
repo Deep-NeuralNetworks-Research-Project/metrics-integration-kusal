@@ -21,4 +21,4 @@ jobs:
       - name: Ruff
         run: ruff check src tests
       - name: Pytest (CPU)
-        run: pytest -m "not gpu" -q
+        run: pytest -m "not gpu and not ffmpeg" -q

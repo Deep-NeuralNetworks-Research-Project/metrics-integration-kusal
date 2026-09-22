@@ -36,7 +36,7 @@ It follows the frozen metric contract in `CLAUDE.md`: `reset() / update(outputs,
 python -m venv .venv && source .venv/bin/activate
 pip install torch --index-url https://download.pytorch.org/whl/cpu   # or the CUDA wheel
 pip install -e ".[dev]"
-pytest -m "not gpu" -q
+pytest -m "not gpu and not ffmpeg" -q
 python -m cdlib.cli.evaluate --dummy --split test --out results/eval.json
 python -m cdlib.cli.evaluate --checkpoint PATH --split test --out results/eval.json
 python -m cdlib.cli.evaluate --dummy --robustness suite --out results/eval.json
