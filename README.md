@@ -45,17 +45,18 @@ python -m cdlib.cli.benchmark --model dummy --img-size 64 --device cpu
 python -m cdlib.cli.export_masks exp_id=demo --overlays best,median,worst
 ```
 
-W&B project (team): `moratuwa-cd-p5` — put `WANDB_API_KEY` in Colab/Kaggle secrets, never in git.
+W&B project (team): `moratuwa-cd-p5` — see [docs/wandb_project.md](docs/wandb_project.md). Put `WANDB_API_KEY` in Colab/Kaggle secrets, never in git.
 
 ## Hand-offs
 
 | To | What |
 |---|---|
 | Everyone | `cli/evaluate.py` + `docs/eval_schema.md` before any paper number |
-| P1 | `docs/nuisance_label.md`, π convention, mask folder layout for `compute_pi.py` |
+| P1 | `docs/nuisance_label.md`, `configs/corruptions/suite.yaml` + `apply_to_pair`, π via `scripts/compute_pi.py` |
 | P3 | `python -m cdlib.cli.benchmark` — encoder step-time, params, pair FLOPs, memory |
 | Member 5 | empty `calibration` object in the eval JSON — add fields, do not fork the script |
-| P2, P4 | `docs/dice_calibration_conflict.md` by week 4; confirm SCE field names before quoting |
+| P2, P4 | `docs/dice_calibration_conflict.md`; confirm SCE field names before quoting |
+| Team | `docs/wandb_project.md` — create W&B project `moratuwa-cd-p5` (API key never in git) |
 
 ## Not in this repo
 
