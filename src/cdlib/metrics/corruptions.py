@@ -68,8 +68,8 @@ def _as_chw(img: np.ndarray) -> np.ndarray:
 
 
 def brightness(img: np.ndarray, severity: int, rng: np.random.Generator | None = None) -> np.ndarray:
-    """Additive HSV-V shift, ImageNet-C-ish 0.1→0.5."""
-    delta = [0.1, 0.2, 0.3, 0.4, 0.5][severity - 1]
+    """Additive shift. Severity schedule lives in configs/corruptions/suite.yaml."""
+    delta = float(_param("brightness", "delta")[severity - 1])
     if rng is None:
         rng = np.random.default_rng(0)
     sign = 1.0 if rng.random() < 0.5 else -1.0
@@ -78,8 +78,8 @@ def brightness(img: np.ndarray, severity: int, rng: np.random.Generator | None =
 
 
 def gamma(img: np.ndarray, severity: int, rng: np.random.Generator | None = None) -> np.ndarray:
-    ranges = [(0.85, 1.18), (0.7, 1.4), (0.55, 1.8), (0.4, 2.2), (0.25, 3.0)]
-    lo, hi = ranges[severity - 1]
+    lo = float(_param("gamma", "range_lo")[severity - 1])
+    hi = float(_param("gamma", "range_hi")[severity - 1])
     if rng is None:
         rng = np.random.default_rng(0)
     g = float(rng.uniform(lo, hi))
@@ -89,8 +89,8 @@ def gamma(img: np.ndarray, severity: int, rng: np.random.Generator | None = None
 
 def colour_grading(img: np.ndarray, severity: int, rng: np.random.Generator | None = None) -> np.ndarray:
     """ASC-CDL: out = clip(slope*in + offset, 0, 1) ** power, then saturation."""
-    jitter = [0.03, 0.06, 0.10, 0.15, 0.25][severity - 1]
-    power_span = [0.1, 0.2, 0.3, 0.45, 0.6][severity - 1]
+    jitter = float(_param("colour_grading", "jitter")[severity - 1])
+    power_span = float(_param("colour_grading", "power_span")[severity - 1])
     if rng is None:
         rng = np.random.default_rng(0)
     slope = 1.0 + rng.uniform(-jitter, jitter, size=(3, 1, 1))
@@ -105,7 +105,7 @@ def colour_grading(img: np.ndarray, severity: int, rng: np.random.Generator | No
 
 
 def gaussian_blur(img: np.ndarray, severity: int, rng: np.random.Generator | None = None) -> np.ndarray:
-    sigma = [0.5, 1.0, 2.0, 3.0, 4.0][severity - 1]
+    sigma = float(_param("gaussian_blur", "sigma")[severity - 1])
     hwc = _chw_to_hwc_u8(img)
     k = max(3, int(2 * round(3 * sigma) + 1))
     out = cv2.GaussianBlur(hwc, (k, k), sigmaX=sigma)
@@ -113,7 +113,7 @@ def gaussian_blur(img: np.ndarray, severity: int, rng: np.random.Generator | Non
 
 
 def motion_blur(img: np.ndarray, severity: int, rng: np.random.Generator | None = None) -> np.ndarray:
-    length = [3, 7, 15, 25, 35][severity - 1]
+    length = int(_param("motion_blur", "length")[severity - 1])
     if rng is None:
         rng = np.random.default_rng(0)
     theta = float(rng.uniform(0, np.pi))
@@ -130,7 +130,7 @@ def motion_blur(img: np.ndarray, severity: int, rng: np.random.Generator | None 
 
 
 def jpeg(img: np.ndarray, severity: int, rng: np.random.Generator | None = None) -> np.ndarray:
-    quality = [90, 70, 50, 30, 10][severity - 1]
+    quality = int(_param("jpeg", "quality")[severity - 1])
     hwc = _chw_to_hwc_u8(img)
     ok, buf = cv2.imencode(".jpg", hwc, [int(cv2.IMWRITE_JPEG_QUALITY), int(quality)])
     if not ok:
@@ -171,22 +171,20 @@ def _ffmpeg_roundtrip(img: np.ndarray, codec: str, crf: int, cache_dir: Path | N
     return result
 
 
-_H264_CRF = [18, 23, 28, 35, 45]
-_HEVC_CRF = [20, 25, 30, 37, 47]
-
-
 def h264(img: np.ndarray, severity: int, rng: np.random.Generator | None = None,
          cache_dir: Path | None = None) -> np.ndarray:
-    return _ffmpeg_roundtrip(img, "libx264", _H264_CRF[severity - 1], cache_dir)
+    crf = int(_param("h264", "crf", section="optional")[severity - 1])
+    return _ffmpeg_roundtrip(img, "libx264", crf, cache_dir)
 
 
 def hevc(img: np.ndarray, severity: int, rng: np.random.Generator | None = None,
          cache_dir: Path | None = None) -> np.ndarray:
-    return _ffmpeg_roundtrip(img, "libx265", _HEVC_CRF[severity - 1], cache_dir)
+    crf = int(_param("hevc", "crf", section="optional")[severity - 1])
+    return _ffmpeg_roundtrip(img, "libx265", crf, cache_dir)
 
 
 def shadow(img: np.ndarray, severity: int, rng: np.random.Generator | None = None) -> np.ndarray:
-    intensity = [0.1, 0.2, 0.35, 0.5, 0.7][severity - 1]
+    intensity = float(_param("shadow", "intensity")[severity - 1])
     if rng is None:
         rng = np.random.default_rng(0)
     x = _as_chw(img).copy()
@@ -204,8 +202,8 @@ def shadow(img: np.ndarray, severity: int, rng: np.random.Generator | None = Non
 
 
 def viewpoint(img: np.ndarray, severity: int, rng: np.random.Generator | None = None) -> np.ndarray:
-    translate = [0.01, 0.02, 0.04, 0.08, 0.16][severity - 1]
-    rotate = [0.5, 1.0, 2.0, 4.0, 8.0][severity - 1]
+    translate = float(_param("viewpoint", "translate")[severity - 1])
+    rotate = float(_param("viewpoint", "rotate_deg")[severity - 1])
     if rng is None:
         rng = np.random.default_rng(0)
     hwc = _chw_to_hwc_u8(img)
@@ -221,7 +219,7 @@ def viewpoint(img: np.ndarray, severity: int, rng: np.random.Generator | None = 
 
 
 def occlusion(img: np.ndarray, severity: int, rng: np.random.Generator | None = None) -> np.ndarray:
-    frac = [0.02, 0.05, 0.10, 0.20, 0.35][severity - 1]
+    frac = float(_param("occlusion", "area_fraction")[severity - 1])
     if rng is None:
         rng = np.random.default_rng(0)
     x = _as_chw(img).copy()
@@ -280,10 +278,113 @@ def apply_to_pair(
     which: WhichFrame = "t2",
     rng: np.random.Generator | None = None,
     cache_dir: Path | None = None,
+    pair_id: str | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Corrupt exactly one frame. Never both."""
+    """Corrupt exactly one frame. Never both.
+
+    When ``pair_id`` is set and ``rng`` is not, the RNG is
+    ``sha256(pair_id|name|severity|direction)`` so every configuration
+    sees the same corrupted pair.
+    """
+    if rng is None and pair_id is not None:
+        rng = corruption_rng(pair_id, name, severity, which)
     if which == "t2":
         return img1, apply_corruption(img2, name, severity, rng=rng, cache_dir=cache_dir)
     if which == "t1":
         return apply_corruption(img1, name, severity, rng=rng, cache_dir=cache_dir), img2
     raise ValueError("which must be 't1' or 't2' — corrupting both frames is forbidden")
+
+
+# Paper grid. colour_grading and shadow stay implemented; they are not in
+# the supplementary table unless a caller asks for them by name.
+PAPER_GRID = (
+    "brightness",
+    "gamma",
+    "gaussian_blur",
+    "motion_blur",
+    "jpeg",
+    "viewpoint",
+    "occlusion",
+)
+
+_SUITE_CACHE: dict | None = None
+
+
+def _suite_path() -> Path:
+    return Path(__file__).resolve().parents[3] / "configs" / "corruptions" / "suite.yaml"
+
+
+def _parse_scalar(text: str):
+    text = text.strip()
+    if text in ("true", "false"):
+        return text == "true"
+    if text.startswith("["):
+        inner = text.strip("[]").strip()
+        if not inner:
+            return []
+        out = []
+        for part in inner.split(","):
+            part = part.strip()
+            out.append(float(part) if "." in part else int(part))
+        return out
+    return text
+
+
+def _parse_suite(text: str) -> dict:
+    root: dict = {}
+    stack: list[tuple[int, dict]] = [(-1, root)]
+    for raw in text.splitlines():
+        if not raw.strip() or raw.strip().startswith("#"):
+            continue
+        indent = len(raw) - len(raw.lstrip(" "))
+        line = raw.strip()
+        while stack and indent <= stack[-1][0]:
+            stack.pop()
+        parent = stack[-1][1]
+        key, _, rest = line.partition(":")
+        key = key.strip()
+        rest = rest.strip()
+        if rest == "":
+            node: dict = {}
+            parent[key] = node
+            stack.append((indent, node))
+        else:
+            parent[key] = _parse_scalar(rest)
+    return root
+
+
+def load_suite(path: Path | None = None) -> dict:
+    """Read configs/corruptions/suite.yaml. Cached."""
+    global _SUITE_CACHE
+    if path is None and _SUITE_CACHE is not None:
+        return _SUITE_CACHE
+    src = path or _suite_path()
+    if not src.is_file():
+        raise FileNotFoundError(
+            f"corruption suite config not found at {src}. "
+            "The severity schedule must come from configs/corruptions/suite.yaml."
+        )
+    parsed = _parse_suite(src.read_text())
+    if parsed.get("stack_corruptions") is True:
+        raise ValueError("suite.yaml must set stack_corruptions: false")
+    if parsed.get("one_frame_only") is not True or parsed.get("both_directions") is not True:
+        raise ValueError("suite.yaml must corrupt one frame, both directions")
+    if path is None:
+        _SUITE_CACHE = parsed
+    return parsed
+
+
+def _param(name: str, key: str, section: str = "main") -> list:
+    block = load_suite()[section][name]
+    return list(block[key])
+
+
+def main_suite_names() -> tuple[str, ...]:
+    present = load_suite()["main"]
+    return tuple(name for name in PAPER_GRID if name in present)
+
+
+def corruption_rng(pair_id: str, name: str, severity: int, which: str) -> np.random.Generator:
+    digest = hashlib.sha256(f"{pair_id}|{name}|{severity}|{which}".encode()).digest()
+    seed = int.from_bytes(digest[:8], "little") % (2**32)
+    return np.random.default_rng(seed)

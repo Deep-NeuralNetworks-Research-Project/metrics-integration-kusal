@@ -90,7 +90,6 @@ def run_corruption_eval(
     names = tuple(names) if names is not None else EVAL_CORRUPTIONS
     if include_codecs:
         names = names + CODEC_CORRUPTIONS
-    rng = np.random.default_rng(seed)
     logits_clean = np.asarray(predict_fn(img1, img2))
     clean_m = SegmentationMetric()
     clean_m.update({"logits": logits_clean}, {"mask": mask})
@@ -99,7 +98,9 @@ def run_corruption_eval(
     for name in names:
         for s in severities:
             for which in directions:
-                c1, c2 = apply_to_pair(img1, img2, name, int(s), which=which, rng=rng, cache_dir=cache_dir)
+                c1, c2 = apply_to_pair(
+                    img1, img2, name, int(s), which=which, cache_dir=cache_dir, pair_id=str(seed)
+                )
                 logits = np.asarray(predict_fn(c1, c2))
                 m = SegmentationMetric()
                 m.update({"logits": logits}, {"mask": mask})

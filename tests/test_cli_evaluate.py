@@ -7,12 +7,13 @@ from cdlib.cli.export_masks import main as export_main
 
 
 def test_evaluate_all_metrics(capsys, tmp_path):
-    rc = evaluate_main(["+metrics=all", "--img-size", "32", "--batch-size", "2", "--seed", "0"])
+    rc = evaluate_main(["--dummy", "--split", "test", "--img-size", "32", "--batch-size", "2", "--seed", "0"])
     assert rc == 0
     blob = json.loads(capsys.readouterr().out)
-    assert "segmentation" in blob["metrics"]
-    assert "f1" in blob["metrics"]["segmentation"]
-    assert "changed_pixel_ratio" in blob["metrics"]["segmentation"]
+    assert blob["split"] == "test"
+    assert "f1" in blob
+    assert "pi" in blob
+    assert blob["calibration"] == {}
 
 
 def test_export_overlays(tmp_path):

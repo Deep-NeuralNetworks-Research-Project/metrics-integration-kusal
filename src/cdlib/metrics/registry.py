@@ -14,7 +14,9 @@ def build_metric(key: str, **kwargs) -> Metric:
 def _register_builtins() -> None:
     # Imported here to avoid circular imports at module load.
     from cdlib.metrics.boundary import BoundaryMetric
+    from cdlib.metrics.boundary_f1 import BoundaryF1Metric
     from cdlib.metrics.calibration import CalibrationMetric
+    from cdlib.metrics.change_size import ChangeSizeMetric
     from cdlib.metrics.region import RegionMetric
     from cdlib.metrics.robustness import RobustnessMetric
     from cdlib.metrics.segmentation import SegmentationMetric
@@ -22,10 +24,12 @@ def _register_builtins() -> None:
 
     METRIC_REGISTRY.register("segmentation")(SegmentationMetric)
     METRIC_REGISTRY.register("boundary")(BoundaryMetric)
+    METRIC_REGISTRY.register("boundary_f1")(BoundaryF1Metric)
     METRIC_REGISTRY.register("region")(RegionMetric)
     METRIC_REGISTRY.register("calibration")(CalibrationMetric)
     METRIC_REGISTRY.register("robustness")(RobustnessMetric)
     METRIC_REGISTRY.register("swap_consistency")(SwapConsistencyMetric)
+    METRIC_REGISTRY.register("change_size")(ChangeSizeMetric)
 
 
 _register_builtins()
