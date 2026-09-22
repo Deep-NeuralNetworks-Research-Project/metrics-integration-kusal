@@ -12,3 +12,5 @@ The planned **weighted BCE + Dice** loss fights the calibration deliverable.
 2. Only if class-wise / foreground ECE still fails after (1): a calibration-aware auxiliary term (P4's `losses/calibration.py`).
 
 P2/P4 implement against this decision; P5 measures whether it worked.
+
+**P5 status:** decision is frozen in this doc and in `TemperatureScaler`. Bring it to the next team sync (org: Thisen-Ekanayake, weenukarajapaksha / novelty owner). Do not wait until results-section week.

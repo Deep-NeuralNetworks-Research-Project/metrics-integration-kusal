@@ -18,5 +18,8 @@ P1 populates `nuisance_label` on every sample. P5's stratified evaluation bins o
 | -1 | unknown | default when we do not know — **never silently write 0** |
 
 Constants live in `cdlib.metrics.corruptions.NUISANCE_ID`.
+Severity schedules live in `configs/corruptions/suite.yaml`.
 
-P1's training-negative mining and P5's evaluation suite must call the **same** `apply_to_pair` implementation. Training uses it as augmentation; evaluation uses it as a frozen test-time transform with a fixed RNG seed per pair.
+P1's training-negative mining and P5's evaluation suite must call the **same** `apply_to_pair` implementation. Training uses it as augmentation; evaluation uses it as a frozen test-time transform with seed `(pair_id, corruption, severity, direction)`.
+
+**P5 status (ready for P1 sign-off):** taxonomy table above, `apply_to_pair`, suite YAML, and `--robustness suite` in `python -m cdlib.cli.evaluate`. Reply on issue #1 / #2 if the ids conflict with your loader plan; otherwise treat this table as frozen.
