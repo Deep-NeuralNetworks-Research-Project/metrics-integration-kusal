@@ -81,6 +81,10 @@ def test_run_corruption_eval_both_directions():
 
 @pytest.mark.ffmpeg
 def test_h264_roundtrip_changes_pixels(tmp_path):
+    import shutil
+
+    if shutil.which("ffmpeg") is None:
+        pytest.skip("ffmpeg not on PATH")
     img = _img(h=64, w=64)
     out = apply_corruption(img, "h264", 5, cache_dir=tmp_path)
     assert out.shape == img.shape
