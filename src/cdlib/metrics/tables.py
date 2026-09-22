@@ -80,3 +80,51 @@ def nuisance_markdown(grid: Mapping[str, float]) -> str:
     if len(lines) == 2:
         lines.append("| — | — | — | — | — |")
     return "\n".join(lines)
+
+
+SIZE_BINS = ("small", "medium", "large")
+
+
+def emit_change_size_table(records: Sequence[Mapping]) -> str:
+    """F1 and SCE_flip per provisional change-size bin.
+
+    Reads the nested ``change_size`` object already stored in each eval JSON.
+    """
+    groups: dict[str, list[Mapping]] = defaultdict(list)
+    for rec in records:
+        groups[str(rec.get("config", "unnamed"))].append(rec)
+    header = "| config | bin | f1 | sce_flip | n |"
+    lines = [header, "|---|---|---|---|---|"]
+    flagged = False
+    for name in sorted(groups):
+        rows = groups[name]
+        n = len(rows)
+        for bin_name in SIZE_BINS:
+            f1s = []
+            sces = []
+            for rec in rows:
+                size = rec.get("change_size") or {}
+                f1s.append(float(size.get(f"f1_{bin_name}", 0.0)))
+                sces.append(float(size.get(f"sce_flip_{bin_name}", 0.0)))
+            f1_arr = np.asarray(f1s, dtype=np.float64)
+            sce_arr = np.asarray(sces, dtype=np.float64)
+            if n == 1:
+                f1_cell = f"{f1_arr[0]:.4f}"
+                sce_cell = f"{sce_arr[0]:.4f}"
+                flagged = True
+                flag = " †"
+            else:
+                f1_cell = f"{f1_arr.mean():.4f} ± {f1_arr.std(ddof=1):.4f}"
+                sce_cell = f"{sce_arr.mean():.4f} ± {sce_arr.std(ddof=1):.4f}"
+                flag = ""
+            lines.append(f"| {name}{flag} | {bin_name} | {f1_cell} | {sce_cell} | {n} |")
+    lines.append("")
+    lines.append("Bins are provisional (small < 64, medium ≤ 1024, large > 1024) until a LEVIR histogram replaces them.")
+    if flagged:
+        lines.append("† n=1: ± omitted.")
+    lines.append("No significance tests.")
+    return "\n".join(lines)
+
+
+def change_size_table_from_paths(paths: Iterable[str | Path]) -> str:
+    return emit_change_size_table(_load(paths))

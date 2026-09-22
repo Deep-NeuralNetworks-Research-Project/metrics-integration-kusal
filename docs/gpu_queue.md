@@ -20,7 +20,7 @@ python -m cdlib.cli.evaluate --checkpoint PATH --split test --config NAME --seed
 Then:
 
 ```bash
-python -c "from cdlib.metrics.tables import table_i_from_paths; print(table_i_from_paths(['results']))"
+python -c "from cdlib.metrics.tables import table_i_from_paths, change_size_table_from_paths; print(table_i_from_paths(['results'])); print(change_size_table_from_paths(['results']))"
 ```
 
 A cell with one JSON is printed without ± and marked †. Do not claim an error bar there.
